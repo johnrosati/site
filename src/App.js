@@ -26,16 +26,6 @@ const App = () => {
       videoUrl: "/videos/video3.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
-    {
-      title: "River of Days",
-      videoUrl: "/videos/video1.mp4",
-      placeholderImage: "https://via.placeholder.com/800x400",
-    },
-    {
-      title: "River of Days",
-      videoUrl: "/videos/video1.mp4",
-      placeholderImage: "https://via.placeholder.com/800x400",
-    },
     // other videos
   ];
 
