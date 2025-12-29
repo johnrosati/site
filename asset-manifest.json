@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/video-artist-portfolio/static/css/main.cf588007.css",
+    "main.js": "/video-artist-portfolio/static/js/main.4352c1c5.js",
+    "index.html": "/video-artist-portfolio/index.html",
+    "main.cf588007.css.map": "/video-artist-portfolio/static/css/main.cf588007.css.map",
+    "main.4352c1c5.js.map": "/video-artist-portfolio/static/js/main.4352c1c5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cf588007.css",
+    "static/js/main.4352c1c5.js"
+  ]
+}
