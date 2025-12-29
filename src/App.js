@@ -7,23 +7,13 @@ const App = () => {
   
   const videos = [
     {
-      title: "River of Days",
+      title: "John Rosati presents",
       videoUrl: "/videos/video4.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     {
       title: "River of Days",
       videoUrl: "/videos/video1.mp4",
-      placeholderImage: "https://via.placeholder.com/800x400",
-    },
-    {
-      title: "River of Days",
-      videoUrl: "/videos/video2.mp4",
-      placeholderImage: "https://via.placeholder.com/800x400",
-    },
-    {
-      title: "River of Days",
-      videoUrl: "/videos/video3.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     // other videos
