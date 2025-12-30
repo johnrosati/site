@@ -9,7 +9,7 @@ const FilmSynopsis = () => (
         <div className="lg:sticky lg:top-6">
           <div className="overflow-hidden rounded-xl shadow-sm ring-1 ring-black/5 bg-paper">
             <video
-              src={process.env.PUBLIC_URL + "/videos/video8.mp4"}
+              src={process.env.PUBLIC_URL + "/videos/video3.mp4"}
               poster="https://via.placeholder.com/1200x675"
               autoPlay
               loop
