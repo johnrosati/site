@@ -3,7 +3,7 @@ import VideoSection from './components/VideoSection';
 import Modal from './components/Modal';
 
 const FilmSynopsis = () => (
-  <div className="p-4 text-center">
+  <div className="p-6 sm:p-8 text-center bg-paper text-ink">
     <VideoSection
       title="River of Days"
       videoUrl={process.env.PUBLIC_URL + "/videos/video3.mp4"}
@@ -13,7 +13,7 @@ const FilmSynopsis = () => (
       muted
       playsInline
     />
-    <p className="text-sm leading-relaxed mt-4">
+    <p className="mt-6 text-sm sm:text-base leading-relaxed text-ink/90 max-w-prose mx-auto">
       “River of Days” is a contemplative short film that weaves together the stories of three generations in a small riverside town, capturing the fleeting beauty and poignant regrets of ordinary life.<br/><br/>
       The film opens with Kenji, an elderly man in his late 70s, who spends his days fishing. Each cast triggers memories of tenderness, regret, and dreams unfulfilled.<br/><br/>
       Parallel to Kenji’s story is Aya, a young woman in her late 20s, who has returned home, discovering that life's imperfections provide meaning.<br/><br/>
@@ -25,7 +25,7 @@ const FilmSynopsis = () => (
         href="https://twitter.com/riverofdays"
         target="_blank"
         rel="noopener noreferrer"
-        className="w-4/5 mx-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700"
+        className="w-full sm:w-auto mx-auto inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium rounded-md shadow-sm text-paper bg-accent hover:bg-accent2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent"
       >
         Follow River of Days on X
       </a>
@@ -63,21 +63,23 @@ const App = () => {
   ];
 
   return (
-    <main className="container mx-auto px-4 pt-24">
-      {videos.map((video) => (
-        <VideoSection
-          key={video.videoUrl}
-          {...video}
-          autoPlay
-          loop
-          muted
-          playsInline
-          onClick={() => setModalOpen(true)}
-        />
-      ))}
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <FilmSynopsis />
-      </Modal>
+    <main className="min-h-screen bg-paper text-ink font-sans">
+      <div className="container mx-auto px-4 pt-16 sm:pt-24 pb-16 space-y-10">
+        {videos.map((video) => (
+          <VideoSection
+            key={video.videoUrl}
+            {...video}
+            autoPlay
+            loop
+            muted
+            playsInline
+            onClick={() => setModalOpen(true)}
+          />
+        ))}
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+          <FilmSynopsis />
+        </Modal>
+      </div>
     </main>
   );
 };

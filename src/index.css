@@ -2,8 +2,8 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-body {
-  font-family: 'Ghibli', sans-serif;
-  background-color: #white;
-  color: #5C4B51;
+@layer base {
+  body {
+    @apply font-sans bg-white text-slate-700;
+  }
 }
