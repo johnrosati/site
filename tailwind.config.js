@@ -7,7 +7,7 @@ module.exports = {
       colors: {
         ink: '#5C4B51',
         paper: '#f6f4ef',
-        accent: '#A2D5F2',
+        accent: '#F3D36B', // retro yellow, warm and filmic
         accent2: '#8BBEB2',
         accent3: '#F9E07F',
 
