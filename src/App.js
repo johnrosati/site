@@ -8,12 +8,12 @@ const App = () => {
   const videos = [
     {
       title: "John Rosati presents",
-      videoUrl: "/videos/video4.mp4",
+      videoUrl: process.env.PUBLIC_URL + "/videos/video4.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     {
       title: "River of Days",
-      videoUrl: "/videos/video1.mp4",
+      videoUrl: process.env.PUBLIC_URL + "/videos/video1.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     // other videos
@@ -36,7 +36,7 @@ const App = () => {
         <div className="p-4 text-center">
           <VideoSection
             title="River of Days"
-            videoUrl="/videos/video3.mp4"
+            videoUrl={process.env.PUBLIC_URL + "/videos/video3.mp4"}
             placeholderImage="https://via.placeholder.com/800x400"
             autoPlay
             loop

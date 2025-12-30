@@ -1,6 +1,6 @@
 {
   "name": "video-artist-portfolio",
-  "homepage": "https://johnrosati.github.io/site",
+"homepage": "."
   "version": "0.1.0",
   "private": true,
   "dependencies": {
