@@ -1,64 +1,65 @@
-import React, { useMemo, useRef } from 'react';
-import { Canvas, useFrame, extend } from '@react-three/fiber';
+import React, { useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
-// --- A small shader that feels like "light on water" ---
-// Gentle vertex displacement + soft moving highlights.
-const WaterMaterial = {
+// "Light on water" — restrained, cinematic. One plane, gentle displacement, soft highlights.
+const WaterShader = {
   uniforms: {
     uTime: { value: 0 },
-    uColorDeep: { value: new THREE.Color('#1f2a2b') },
-    uColorShallow: { value: new THREE.Color('#2f3a36') },
-    uLightTint: { value: new THREE.Color('#b9c2b8') },
-    uWaveAmp: { value: 0.12 },
-    uWaveFreq: { value: 0.9 },
+    uDeep: { value: new THREE.Color('#141c1d') },
+    uShallow: { value: new THREE.Color('#2a3431') },
+    uTint: { value: new THREE.Color('#c7cec4') },
+    uWaveAmp: { value: 0.08 },
+    uWaveFreq: { value: 0.85 },
   },
   vertexShader: /* glsl */ `
     uniform float uTime;
     uniform float uWaveAmp;
     uniform float uWaveFreq;
 
-    varying vec3 vPos;
-    varying vec3 vNormal;
+    varying vec3 vWorldPos;
+    varying vec3 vWorldNormal;
 
-    float wave(vec2 p) {
-      // Two blended sine waves; slow, filmic motion.
-      float t = uTime * 0.15;
-      float w1 = sin((p.x * uWaveFreq) + t);
-      float w2 = sin((p.y * (uWaveFreq * 0.85)) - t * 0.9);
-      float w3 = sin((p.x + p.y) * (uWaveFreq * 0.55) + t * 0.7);
-      return (w1 + w2 + 0.6 * w3);
+    float wave(vec2 p, float t) {
+      float w1 = sin(p.x * uWaveFreq + t);
+      float w2 = sin(p.y * (uWaveFreq * 0.75) - t * 0.9);
+      float w3 = sin((p.x + p.y) * (uWaveFreq * 0.45) + t * 0.6);
+      return (w1 + w2 + 0.65 * w3);
     }
 
     void main() {
-      vPos = position;
+      float t = uTime * 0.18;
 
       vec3 pos = position;
-      float w = wave(pos.xz);
+      float w = wave(pos.xz, t);
       pos.y += w * uWaveAmp;
 
-      // Approximate normal from local height changes
+      // Derive a smoother normal from nearby heights
       float eps = 0.35;
-      float wX = wave((pos.xz + vec2(eps, 0.0)));
-      float wZ = wave((pos.xz + vec2(0.0, eps)));
+      float wX = wave(pos.xz + vec2(eps, 0.0), t);
+      float wZ = wave(pos.xz + vec2(0.0, eps), t);
+
       vec3 dx = vec3(1.0, (wX - w) * uWaveAmp / eps, 0.0);
       vec3 dz = vec3(0.0, (wZ - w) * uWaveAmp / eps, 1.0);
-      vNormal = normalize(cross(dz, dx));
+      vec3 n = normalize(cross(dz, dx));
 
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+      vWorldPos = worldPos.xyz;
+      vWorldNormal = normalize(mat3(modelMatrix) * n);
+
+      gl_Position = projectionMatrix * viewMatrix * worldPos;
     }
   `,
   fragmentShader: /* glsl */ `
     uniform float uTime;
-    uniform vec3 uColorDeep;
-    uniform vec3 uColorShallow;
-    uniform vec3 uLightTint;
+    uniform vec3 uDeep;
+    uniform vec3 uShallow;
+    uniform vec3 uTint;
 
-    varying vec3 vPos;
-    varying vec3 vNormal;
+    varying vec3 vWorldPos;
+    varying vec3 vWorldNormal;
 
-    // Small soft noise (value noise)
     float hash(vec2 p) {
       return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
     }
@@ -75,26 +76,35 @@ const WaterMaterial = {
     }
 
     void main() {
-      // Fake a distant, overcast key light
-      vec3 lightDir = normalize(vec3(-0.25, 0.8, 0.35));
-      float ndl = clamp(dot(normalize(vNormal), lightDir), 0.0, 1.0);
+      // Overcast key light direction
+      vec3 lightDir = normalize(vec3(-0.25, 0.85, 0.3));
+      vec3 n = normalize(vWorldNormal);
 
-      // Depth-ish gradient across the plane
-      float grad = smoothstep(-18.0, 18.0, vPos.z);
-      vec3 base = mix(uColorDeep, uColorShallow, grad);
+      // View direction approximation from fragment position in view space
+      // (good enough for Fresnel without extra uniforms)
+      vec3 viewDir = normalize(cameraPosition - vWorldPos);
 
-      // Soft moving caustic-like streaks (very subtle)
-      float t = uTime * 0.06;
-      float n = noise(vPos.xz * 0.12 + vec2(t, -t));
-      float streak = smoothstep(0.55, 0.85, n) * 0.35;
+      float ndl = clamp(dot(n, lightDir), 0.0, 1.0);
 
-      // Highlight: mostly diffuse + tiny sheen
-      float sheen = pow(ndl, 2.0) * 0.25;
+      // Gentle distance gradient (z acts like "depth" along the plane)
+      float depth = smoothstep(-6.0, 22.0, vWorldPos.z);
+      vec3 base = mix(uDeep, uShallow, depth);
+
+      // Subtle moving streaks (very restrained)
+      float t = uTime * 0.05;
+      float n0 = noise(vWorldPos.xz * 0.10 + vec2(t, -t));
+      float streak = smoothstep(0.62, 0.88, n0) * 0.18;
+
+      // Fresnel sheen: stronger at grazing angles (like water)
+      float fres = pow(1.0 - clamp(dot(n, viewDir), 0.0, 1.0), 2.0);
+      float sheen = fres * (0.10 + 0.18 * pow(ndl, 1.4));
+
       vec3 col = base;
-      col += uLightTint * (streak * 0.25 + sheen);
+      col += uTint * (streak + sheen);
 
-      // Filmic restraint: keep contrast low
-      col = mix(col, vec3(0.0), 0.08);
+      // Filmic restraint / soft lift
+      col = mix(col, vec3(0.0), 0.06);
+      col = pow(col, vec3(0.95));
 
       gl_FragColor = vec4(col, 1.0);
     }
@@ -102,29 +112,24 @@ const WaterMaterial = {
 };
 
 function WaterPlane() {
-  const materialRef = useRef();
-
-  const shaderMaterial = useMemo(() => {
-    const mat = new THREE.ShaderMaterial({
-      uniforms: THREE.UniformsUtils.clone(WaterMaterial.uniforms),
-      vertexShader: WaterMaterial.vertexShader,
-      fragmentShader: WaterMaterial.fragmentShader,
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: THREE.UniformsUtils.clone(WaterShader.uniforms),
+      vertexShader: WaterShader.vertexShader,
+      fragmentShader: WaterShader.fragmentShader,
       side: THREE.DoubleSide,
+      transparent: false,
     });
-    return mat;
   }, []);
 
   useFrame((_, delta) => {
-    if (shaderMaterial?.uniforms?.uTime) {
-      shaderMaterial.uniforms.uTime.value += delta;
-    }
+    material.uniforms.uTime.value += delta;
   });
 
   return (
-    <mesh rotation={[-Math.PI / 2.2, 0, 0]} position={[0, -0.75, 0]}>
-      {/* lots of segments for smooth displacement */}
-      <planeGeometry args={[70, 70, 220, 220]} />
-      <primitive object={shaderMaterial} attach="material" ref={materialRef} />
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.6, 0]}>
+      <planeGeometry args={[60, 60, 240, 240]} />
+      <primitive object={material} attach="material" />
     </mesh>
   );
 }
@@ -134,22 +139,31 @@ export default function ThreeScene() {
     <div className="w-full h-[400px] md:h-[600px] lg:h-[800px]">
       <Canvas
         dpr={[1, 2]}
-        camera={{ position: [0, 10, 18], fov: 45, near: 0.1, far: 200 }}
+        camera={{ position: [0, 2.4, 8.5], fov: 50, near: 0.1, far: 120 }}
+        gl={{ antialias: true, alpha: false }}
+        onCreated={({ scene, gl }) => {
+          scene.background = new THREE.Color('#f6f4ef');
+          scene.fog = new THREE.Fog('#f6f4ef', 10, 40);
+          gl.setClearColor('#f6f4ef', 1);
+        }}
       >
-        {/* A very soft ambient + a single dim key to avoid "CG" harshness */}
-        <ambientLight intensity={0.85} />
-        <directionalLight position={[-5, 12, 6]} intensity={0.45} />
+        {/* soft, non-CG lighting */}
+        <ambientLight intensity={0.95} />
+        <directionalLight position={[-6, 8, 4]} intensity={0.35} />
 
         <WaterPlane />
 
         <OrbitControls
+          target={[0, -0.6, 6]}
           enablePan={false}
           enableZoom={false}
-          rotateSpeed={0.35}
+          rotateSpeed={0.28}
           dampingFactor={0.08}
           enableDamping
-          maxPolarAngle={Math.PI / 2.05}
-          minPolarAngle={Math.PI / 3.2}
+          maxPolarAngle={Math.PI / 2.2}
+          minPolarAngle={Math.PI / 3.6}
+          maxAzimuthAngle={Math.PI / 4.2}
+          minAzimuthAngle={-Math.PI / 4.2}
         />
       </Canvas>
     </div>
