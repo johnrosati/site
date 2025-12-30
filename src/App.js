@@ -15,17 +15,17 @@ const App = () => {
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     {
-      title: "John Rosati presents",
+      title: "River of Days",
       videoUrl: process.env.PUBLIC_URL + "/videos/video44.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     {
-      title: "John Rosati presents",
+      title: "Coming soon",
       videoUrl: process.env.PUBLIC_URL + "/videos/video1.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     {
-      title: "John Rosati presents",
+      title: "River of Days",
       videoUrl: process.env.PUBLIC_URL + "/videos/video2.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
