@@ -1,64 +1,88 @@
-import React, { useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useMemo, useRef } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
-// "Light on water" — restrained, cinematic. One plane, gentle displacement, soft highlights.
-const WaterShader = {
+// --- Helpers ---
+function clamp(v, a, b) {
+  return Math.max(a, Math.min(b, v));
+}
+
+// Cinematic camera drift + subtle mouse parallax
+function DriftCamera() {
+  const { camera, pointer } = useThree();
+  const t = useRef(0);
+
+  useFrame((_, delta) => {
+    t.current += delta;
+
+    // Slow, almost imperceptible drift (cinema vibe)
+    const baseX = Math.sin(t.current * 0.06) * 0.25;
+    const baseY = 1.55 + Math.sin(t.current * 0.05) * 0.06;
+    const baseZ = 7.4 + Math.cos(t.current * 0.04) * 0.15;
+
+    // pointer is normalized [-1..1]
+    const px = clamp(pointer.x, -1, 1);
+    const py = clamp(pointer.y, -1, 1);
+
+    // subtle parallax; keep it restrained
+    const targetX = baseX + px * 0.35;
+    const targetY = baseY + py * 0.18;
+    const targetZ = baseZ;
+
+    // lerp to keep movement smooth
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.04);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.04);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.04);
+
+    camera.lookAt(0, 1.05, 0);
+  });
+
+  return null;
+}
+
+// A soft "river" band: a ribbon plane with gentle sine displacement in the vertex shader
+const RiverShader = {
   uniforms: {
     uTime: { value: 0 },
-    uDeep: { value: new THREE.Color('#141c1d') },
-    uShallow: { value: new THREE.Color('#2a3431') },
-    uTint: { value: new THREE.Color('#c7cec4') },
-    uWaveAmp: { value: 0.08 },
-    uWaveFreq: { value: 0.85 },
+    uA: { value: new THREE.Color('#1f2a2b') }, // deep water
+    uB: { value: new THREE.Color('#38433f') }, // shallow water
+    uSheen: { value: new THREE.Color('#c9d0c7') },
   },
   vertexShader: /* glsl */ `
     uniform float uTime;
-    uniform float uWaveAmp;
-    uniform float uWaveFreq;
 
-    varying vec3 vWorldPos;
-    varying vec3 vWorldNormal;
-
-    float wave(vec2 p, float t) {
-      float w1 = sin(p.x * uWaveFreq + t);
-      float w2 = sin(p.y * (uWaveFreq * 0.75) - t * 0.9);
-      float w3 = sin((p.x + p.y) * (uWaveFreq * 0.45) + t * 0.6);
-      return (w1 + w2 + 0.65 * w3);
-    }
+    varying vec2 vUv;
+    varying float vW;
 
     void main() {
-      float t = uTime * 0.18;
+      vUv = uv;
 
-      vec3 pos = position;
-      float w = wave(pos.xz, t);
-      pos.y += w * uWaveAmp;
+      vec3 p = position;
 
-      // Derive a smoother normal from nearby heights
-      float eps = 0.35;
-      float wX = wave(pos.xz + vec2(eps, 0.0), t);
-      float wZ = wave(pos.xz + vec2(0.0, eps), t);
+      float t = uTime * 0.25;
+      float w1 = sin((p.x * 1.1) + t);
+      float w2 = sin((p.x * 0.55) - t * 0.8);
+      float w3 = sin((p.x * 0.22) + t * 0.6);
+      float wave = (w1 + 0.6*w2 + 0.35*w3);
 
-      vec3 dx = vec3(1.0, (wX - w) * uWaveAmp / eps, 0.0);
-      vec3 dz = vec3(0.0, (wZ - w) * uWaveAmp / eps, 1.0);
-      vec3 n = normalize(cross(dz, dx));
+      // More movement near the middle of the band, less at edges
+      float band = smoothstep(0.0, 0.35, vUv.y) * (1.0 - smoothstep(0.65, 1.0, vUv.y));
+      p.y += wave * 0.06 * band;
 
-      vec4 worldPos = modelMatrix * vec4(pos, 1.0);
-      vWorldPos = worldPos.xyz;
-      vWorldNormal = normalize(mat3(modelMatrix) * n);
+      vW = wave;
 
-      gl_Position = projectionMatrix * viewMatrix * worldPos;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }
   `,
   fragmentShader: /* glsl */ `
     uniform float uTime;
-    uniform vec3 uDeep;
-    uniform vec3 uShallow;
-    uniform vec3 uTint;
+    uniform vec3 uA;
+    uniform vec3 uB;
+    uniform vec3 uSheen;
 
-    varying vec3 vWorldPos;
-    varying vec3 vWorldNormal;
+    varying vec2 vUv;
+    varying float vW;
 
     float hash(vec2 p) {
       return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -76,60 +100,103 @@ const WaterShader = {
     }
 
     void main() {
-      // Overcast key light direction
-      vec3 lightDir = normalize(vec3(-0.25, 0.85, 0.3));
-      vec3 n = normalize(vWorldNormal);
+      // Depth across the band
+      float g = smoothstep(0.05, 0.95, vUv.y);
+      vec3 col = mix(uA, uB, g);
 
-      // View direction approximation from fragment position in view space
-      // (good enough for Fresnel without extra uniforms)
-      vec3 viewDir = normalize(cameraPosition - vWorldPos);
+      // Soft moving shimmer (very restrained)
+      float t = uTime * 0.03;
+      float n = noise(vUv * vec2(10.0, 2.0) + vec2(t, -t));
+      float shimmer = smoothstep(0.72, 0.92, n) * 0.10;
 
-      float ndl = clamp(dot(n, lightDir), 0.0, 1.0);
+      // Tiny highlight based on wave sign + center bias
+      float center = smoothstep(0.15, 0.50, vUv.y) * (1.0 - smoothstep(0.50, 0.85, vUv.y));
+      float crest = smoothstep(0.35, 0.95, vW) * 0.12;
 
-      // Gentle distance gradient (z acts like "depth" along the plane)
-      float depth = smoothstep(-6.0, 22.0, vWorldPos.z);
-      vec3 base = mix(uDeep, uShallow, depth);
+      col += uSheen * (shimmer + crest) * center;
 
-      // Subtle moving streaks (very restrained)
-      float t = uTime * 0.05;
-      float n0 = noise(vWorldPos.xz * 0.10 + vec2(t, -t));
-      float streak = smoothstep(0.62, 0.88, n0) * 0.18;
-
-      // Fresnel sheen: stronger at grazing angles (like water)
-      float fres = pow(1.0 - clamp(dot(n, viewDir), 0.0, 1.0), 2.0);
-      float sheen = fres * (0.10 + 0.18 * pow(ndl, 1.4));
-
-      vec3 col = base;
-      col += uTint * (streak + sheen);
-
-      // Filmic restraint / soft lift
-      col = mix(col, vec3(0.0), 0.06);
-      col = pow(col, vec3(0.95));
+      // Fade edges into fog/background
+      float edge = smoothstep(0.0, 0.10, vUv.y) * (1.0 - smoothstep(0.90, 1.0, vUv.y));
+      col *= edge;
 
       gl_FragColor = vec4(col, 1.0);
     }
   `,
 };
 
-function WaterPlane() {
-  const material = useMemo(() => {
+function RiverBand() {
+  const mat = useMemo(() => {
     return new THREE.ShaderMaterial({
-      uniforms: THREE.UniformsUtils.clone(WaterShader.uniforms),
-      vertexShader: WaterShader.vertexShader,
-      fragmentShader: WaterShader.fragmentShader,
+      uniforms: THREE.UniformsUtils.clone(RiverShader.uniforms),
+      vertexShader: RiverShader.vertexShader,
+      fragmentShader: RiverShader.fragmentShader,
       side: THREE.DoubleSide,
-      transparent: false,
+      transparent: true,
+      depthWrite: false,
     });
   }, []);
 
   useFrame((_, delta) => {
-    material.uniforms.uTime.value += delta;
+    mat.uniforms.uTime.value += delta;
   });
 
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.6, 0]}>
-      <planeGeometry args={[60, 60, 240, 240]} />
-      <primitive object={material} attach="material" />
+    <mesh position={[0, 0.55, 0]} rotation={[0, 0, 0]}>
+      {/* wide ribbon, gentle curve implied by lighting + fog */}
+      <planeGeometry args={[14, 2.6, 180, 16]} />
+      <primitive object={mat} attach="material" />
+    </mesh>
+  );
+}
+
+// A single silhouette layer (like paper cutout)
+function SilhouetteLayer({
+  z = -2,
+  y = 0.9,
+  w = 18,
+  h = 7,
+  color = '#111516',
+  opacity = 0.92,
+  bend = 0.0,
+}) {
+  const geom = useMemo(() => {
+    // Create a gently undulating top edge
+    const shape = new THREE.Shape();
+    const left = -w / 2;
+    const right = w / 2;
+
+    shape.moveTo(left, -h);
+    shape.lineTo(left, 0);
+
+    const steps = 26;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const x = THREE.MathUtils.lerp(left, right, t);
+      const n = Math.sin(t * Math.PI * 2.0 + bend) * 0.22;
+      const n2 = Math.sin(t * Math.PI * 4.0 + bend * 0.7) * 0.10;
+      const top = 0.55 + n + n2;
+      shape.lineTo(x, top);
+    }
+
+    shape.lineTo(right, -h);
+    shape.lineTo(left, -h);
+
+    return new THREE.ShapeGeometry(shape, 12);
+  }, [w, h, bend]);
+
+  return (
+    <mesh geometry={geom} position={[0, y, z]}>
+      <meshBasicMaterial color={color} transparent opacity={opacity} />
+    </mesh>
+  );
+}
+
+// A subtle mist layer (big translucent plane)
+function Mist() {
+  return (
+    <mesh position={[0, 1.25, -1.8]}>
+      <planeGeometry args={[22, 10, 1, 1]} />
+      <meshBasicMaterial color="#f6f4ef" transparent opacity={0.35} />
     </mesh>
   );
 }
@@ -139,32 +206,36 @@ export default function ThreeScene() {
     <div className="w-full h-[400px] md:h-[600px] lg:h-[800px]">
       <Canvas
         dpr={[1, 2]}
-        camera={{ position: [0, 2.4, 8.5], fov: 50, near: 0.1, far: 120 }}
+        camera={{ position: [0, 1.55, 7.4], fov: 50, near: 0.1, far: 80 }}
         gl={{ antialias: true, alpha: false }}
         onCreated={({ scene, gl }) => {
-          scene.background = new THREE.Color('#f6f4ef');
-          scene.fog = new THREE.Fog('#f6f4ef', 10, 40);
-          gl.setClearColor('#f6f4ef', 1);
+          const bg = new THREE.Color('#f6f4ef');
+          scene.background = bg;
+          scene.fog = new THREE.Fog(bg, 4.5, 16);
+          gl.setClearColor(bg, 1);
         }}
       >
-        {/* soft, non-CG lighting */}
-        <ambientLight intensity={0.95} />
-        <directionalLight position={[-6, 8, 4]} intensity={0.35} />
+        {/* We use mostly unlit silhouettes + fog for a cinematic, non-CG look */}
+        <DriftCamera />
 
-        <WaterPlane />
+        {/* Far layers (barely visible) */}
+        <SilhouetteLayer z={-7.5} y={1.1} w={24} h={10} color="#0f1415" opacity={0.22} bend={0.7} />
+        <SilhouetteLayer z={-5.5} y={1.05} w={22} h={9} color="#0f1415" opacity={0.32} bend={1.4} />
 
-        <OrbitControls
-          target={[0, -0.6, 6]}
-          enablePan={false}
-          enableZoom={false}
-          rotateSpeed={0.28}
-          dampingFactor={0.08}
-          enableDamping
-          maxPolarAngle={Math.PI / 2.2}
-          minPolarAngle={Math.PI / 3.6}
-          maxAzimuthAngle={Math.PI / 4.2}
-          minAzimuthAngle={-Math.PI / 4.2}
-        />
+        {/* Mid layers */}
+        <SilhouetteLayer z={-3.5} y={0.98} w={20} h={8} color="#111516" opacity={0.55} bend={2.2} />
+        <SilhouetteLayer z={-2.4} y={0.93} w={19} h={7.5} color="#111516" opacity={0.68} bend={2.9} />
+
+        {/* River band in front of silhouettes */}
+        <RiverBand />
+
+        {/* Foreground banks */}
+        <SilhouetteLayer z={-0.8} y={0.86} w={18} h={7} color="#0e1213" opacity={0.88} bend={3.4} />
+
+        <Mist />
+
+        {/* Keep controls disabled to avoid "demo" feel (camera drift + parallax handles engagement) */}
+        <OrbitControls enabled={false} />
       </Canvas>
     </div>
   );
