@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 const Modal = ({
   isOpen,
@@ -51,13 +52,9 @@ const Modal = ({
     if (e.target === e.currentTarget) onClose?.();
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 m-0 p-0 bg-black/60 flex justify-center items-center z-[9999]"
-      style={{
-        padding:
-          'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
-      }}
+      className="fixed inset-0 bg-black/60 flex justify-center items-center z-[9999] p-4 sm:p-8"
       onMouseDown={onOverlayMouseDown}
       aria-hidden={false}
     >
@@ -79,7 +76,8 @@ const Modal = ({
         </button>
         <div>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
