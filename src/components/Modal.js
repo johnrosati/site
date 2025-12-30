@@ -54,7 +54,7 @@ const Modal = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 flex justify-center items-center z-[9999] p-4 sm:p-8"
+      className="fixed inset-0 bg-paper flex justify-center items-center z-[9999] p-4 sm:p-8"
       onMouseDown={onOverlayMouseDown}
       aria-hidden={false}
     >
