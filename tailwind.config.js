@@ -6,7 +6,7 @@ module.exports = {
       // Design tokens (use these across the app)
       colors: {
         ink: '#5C4B51',
-        paper: '#ffffff',
+        paper: '#f6f4ef',
         accent: '#A2D5F2',
         accent2: '#8BBEB2',
         accent3: '#F9E07F',
