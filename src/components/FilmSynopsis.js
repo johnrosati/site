@@ -1,5 +1,3 @@
-// Replace the contents of: src/components/FilmSynopsis.js
-
 import React from "react";
 import Button from "./Button";
 
@@ -64,25 +62,11 @@ const FilmSynopsis = () => (
               href="https://twitter.com/riverofdays"
               target="_blank"
               rel="noopener noreferrer"
+              className="w-full sm:w-auto"
             >
               Follow River of Days on X
             </Button>
-
-            <Button
-              href="https://twitter.com/riverofdays"
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="subtle"
-              className="justify-start"
-            >
-              Read updates →
-            </Button>
           </div>
-
-          <p className="mt-6 text-xs text-ink/60">
-            If you don’t want the extra link, delete the “Read updates →” button—layout
-            will still look clean.
-          </p>
         </div>
       </div>
     </div>
