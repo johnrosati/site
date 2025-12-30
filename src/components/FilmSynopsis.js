@@ -67,6 +67,16 @@ const FilmSynopsis = () => (
               Follow River of Days on X
             </Button>
           </div>
+          <div className="mt-10 max-w-prose">
+            <figure className="group overflow-hidden rounded-xl ring-1 ring-black/5 bg-paper">
+              <img
+                src={process.env.PUBLIC_URL + "/RODposter.jpg"}
+                alt="River of Days film poster"
+                className="w-full h-auto block transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                loading="lazy"
+              />
+            </figure>
+          </div>
         </div>
       </div>
     </div>
