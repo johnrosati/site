@@ -53,7 +53,11 @@ const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+      className="fixed inset-0 m-0 p-0 bg-black/60 flex justify-center items-center z-[9999]"
+      style={{
+        padding:
+          'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
+      }}
       onMouseDown={onOverlayMouseDown}
       aria-hidden={false}
     >
