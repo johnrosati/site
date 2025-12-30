@@ -11,11 +11,6 @@ const App = () => {
       videoUrl: process.env.PUBLIC_URL + "/videos/video4.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
-    {
-      title: "River of Days",
-      videoUrl: process.env.PUBLIC_URL + "/videos/video1.mp4",
-      placeholderImage: "https://via.placeholder.com/800x400",
-    },
     // other videos
   ];
 
