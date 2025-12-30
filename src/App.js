@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import VideoSection from './components/VideoSection';
 import Modal from './components/Modal';
 import FilmSynopsis from "./components/FilmSynopsis";
-import ThreeScene from './components/ThreeScene';
 
 const App = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -48,10 +47,15 @@ const App = () => {
           />
         ))}
 
-        {/* --- Three.js preview --- */}
-<div className="w-full h-[60vh] mt-24 rounded-lg overflow-hidden border border-black/10">
-  <ThreeScene />
-</div>
+        {/* --- Static image preview --- */}
+        <div className="w-full mt-24 rounded-lg overflow-hidden border border-black/10">
+          <img
+            src={process.env.PUBLIC_URL + "/cafepic.png"}
+            alt="Cafe scene still"
+            className="w-full h-auto block"
+            loading="lazy"
+          />
+        </div>
 
         <Modal isOpen={isModalOpen} onClose={closeModal}>
           <FilmSynopsis />
