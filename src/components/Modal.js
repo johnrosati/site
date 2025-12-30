@@ -64,7 +64,7 @@ const Modal = ({
         aria-labelledby={titleId}
         tabIndex={-1}
         ref={dialogRef}
-        className="relative bg-white rounded-lg shadow-xl p-6 sm:p-8 w-[min(92vw,48rem)] lg:w-[min(92vw,64rem)] mx-auto max-h-[85vh] overflow-y-auto outline-none"
+        className="relative bg-paper rounded-lg shadow-xl p-6 sm:p-8 w-[min(92vw,48rem)] lg:w-[min(92vw,64rem)] mx-auto max-h-[85vh] overflow-y-auto outline-none"
       >
         <button
           type="button"
