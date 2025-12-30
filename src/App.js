@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import VideoSection from './components/VideoSection';
 import Modal from './components/Modal';
 import FilmSynopsis from "./components/FilmSynopsis";
+import ThreeScene from './components/ThreeScene';
 
 const App = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -46,6 +47,12 @@ const App = () => {
             onClick={() => setModalOpen(true)}
           />
         ))}
+
+        {/* --- Three.js preview --- */}
+<div className="w-full h-[60vh] mt-24 rounded-lg overflow-hidden border border-black/10">
+  <ThreeScene />
+</div>
+
         <Modal isOpen={isModalOpen} onClose={closeModal}>
           <FilmSynopsis />
         </Modal>
