@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import VideoSection from './components/VideoSection';
 import Modal from './components/Modal';
+import Button from './components/Button';
 
 const FilmSynopsis = () => (
   <div className="p-6 sm:p-8 text-center bg-paper text-ink">
@@ -21,14 +22,14 @@ const FilmSynopsis = () => (
       Their stories culminate in a poignant moment by the river, where past, present, and future converge.
     </p>
     <div className="mt-6">
-      <a
+      <Button
         href="https://twitter.com/riverofdays"
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full sm:w-auto mx-auto inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium rounded-md shadow-sm text-paper bg-accent hover:bg-accent2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent"
+        className="w-full sm:w-auto mx-auto"
       >
         Follow River of Days on X
-      </a>
+      </Button>
     </div>
   </div>
 );
