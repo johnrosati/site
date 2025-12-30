@@ -63,17 +63,17 @@ const Modal = ({
         aria-labelledby={titleId}
         tabIndex={-1}
         ref={dialogRef}
-        className="relative bg-white rounded shadow-lg p-4 max-w-lg w-[min(32rem,90vw)] mx-auto max-h-[80vh] overflow-y-auto outline-none"
+        className="relative bg-white rounded-lg shadow-xl p-6 sm:p-8 w-[min(92vw,48rem)] lg:w-[min(92vw,64rem)] mx-auto max-h-[85vh] overflow-y-auto outline-none"
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-2 right-2 text-2xl leading-none font-bold"
+          className="absolute top-3 right-3 text-2xl leading-none font-semibold text-ink/70 hover:text-ink focus:outline-none"
         >
           &times;
         </button>
-        <div className="p-4">{children}</div>
+        <div>{children}</div>
       </div>
     </div>
   );
