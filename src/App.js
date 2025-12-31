@@ -38,12 +38,12 @@ const App = () => {
   const videos = [
     {
       title: 'River of Days',
-      videoUrl: process.env.PUBLIC_URL + '/videos/Video12.mp4',
+      videoUrl: process.env.PUBLIC_URL + '/videos/video12.mp4',
       placeholderImage: 'https://via.placeholder.com/800x400',
     },
     {
       title: 'Shop',
-      videoUrl: process.env.PUBLIC_URL + '/videos/Video4.mp4',
+      videoUrl: process.env.PUBLIC_URL + '/videos/video4.mp4',
       placeholderImage: 'https://via.placeholder.com/800x400',
     },
     // other videos
