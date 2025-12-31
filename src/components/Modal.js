@@ -7,6 +7,7 @@ const Modal = ({
   children,
   titleId = 'modal-title',
   closeOnOverlayClick = true,
+  showTonePlate = true,
 }) => {
   const dialogRef = useRef(null);
   const lastActiveElementRef = useRef(null);
@@ -74,7 +75,13 @@ const Modal = ({
         >
           &times;
         </button>
-        <div>{children}</div>
+        <div className="relative z-10">{children}</div>
+        {showTonePlate && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none hidden lg:block absolute left-6 sm:left-8 top-[calc(6rem+12rem)] bottom-8 w-[calc(50%-2rem)] max-w-[24rem] rounded-xl border border-ink/10 bg-gradient-to-b from-ink/5 via-accent/12 to-ink/5 shadow-inner z-20"
+          />
+        )}
       </div>
     </div>,
     document.body
