@@ -42,12 +42,12 @@ const App = () => {
     },
     {
       title: "Meet the characters",
-      videoUrl: process.env.PUBLIC_URL + "/videos/video10.mp4",
+      videoUrl: process.env.PUBLIC_URL + "/videos/Video10.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     {
       title: "Shop",
-      videoUrl: process.env.PUBLIC_URL + "/videos/video11.mp4",
+      videoUrl: process.env.PUBLIC_URL + "/videos/Video11.mp4",
       placeholderImage: "https://via.placeholder.com/800x400",
     },
     // other videos
