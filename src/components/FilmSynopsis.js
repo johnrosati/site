@@ -33,20 +33,14 @@ const FilmSynopsis = () => {
           </div>
 
           {/* Copy */}
-          <div className="rounded-xl border border-ink/25 bg-paper/40 p-5 sm:p-6">
-            <header className="space-y-3">
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                River of Days
+          <div className="rounded-xl border border-ink/25 bg-paper overflow-hidden">
+            <header className="bg-ink/5 px-5 sm:px-6 py-4">
+              <h1 className="text-1xl sm:text-1xl font-semibold tracking-tight">
+                River of Days [ 2026 ] USA
               </h1>
-
-              {/* Lede: one strong sentence instead of centered multi-paragraph copy */}
-              <p className="text-base sm:text-lg leading-relaxed text-ink/80 max-w-prose">
-                A contemplative short film weaving three generations in a small riverside
-                town—fleeting beauty, ordinary regrets, and the quiet ways time changes us.
-              </p>
             </header>
-
-            <div className="mt-6 space-y-5 text-sm sm:text-base leading-relaxed text-ink/90 max-w-prose">
+            <div className="px-5 sm:px-6 pb-6">
+            <div className="mt-5 space-y-5 text-sm sm:text-base leading-relaxed text-ink/90 max-w-prose">
               <p>
                 The film opens with Kenji, an elderly man in his late 70s, who spends his
                 days fishing. Each cast triggers memories of tenderness, regret, and dreams
@@ -69,7 +63,7 @@ const FilmSynopsis = () => {
               </p>
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <div className="mt-8 flex justify-center">
               <Button
                 href="https://twitter.com/riverofdays"
                 target="_blank"
@@ -111,6 +105,7 @@ const FilmSynopsis = () => {
                   />
                 </div>
               )}
+            </div>
             </div>
           </div>
         </div>

@@ -75,11 +75,15 @@ const Modal = ({
         >
           &times;
         </button>
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10">
+          <div className="[&_:is(#modal-title,h2:first-of-type)]:-mx-4 [&_:is(#modal-title,h2:first-of-type)]:sm:-mx-6 [&_:is(#modal-title,h2:first-of-type)]:px-4 [&_:is(#modal-title,h2:first-of-type)]:sm:px-6 [&_:is(#modal-title,h2:first-of-type)]:py-3 [&_:is(#modal-title,h2:first-of-type)]:mb-4 [&_:is(#modal-title,h2:first-of-type)]:rounded-md [&_:is(#modal-title,h2:first-of-type)]:bg-ink/5">
+            {children}
+          </div>
+        </div>
         {showTonePlate && (
           <div
             aria-hidden="true"
-            className="pointer-events-none hidden lg:block absolute left-6 sm:left-8 top-[calc(6rem+12rem)] bottom-8 w-[calc(50%-2rem)] max-w-[24rem] rounded-xl border border-ink/10 bg-gradient-to-b from-ink/5 via-accent/12 to-ink/5 shadow-inner z-20"
+            className="pointer-events-none hidden lg:block absolute left-10 sm:left-16 right-[calc(50%+1rem)] top-[calc(6rem+14rem)] bottom-12 rounded-xl border border-ink/10 bg-gradient-to-b from-ink/5 via-accent/12 to-ink/5 shadow-inner z-20"
           />
         )}
       </div>
