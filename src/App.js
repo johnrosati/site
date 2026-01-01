@@ -18,7 +18,7 @@ const App = () => {
       },
       {
         title: 'Shop',
-        videoUrl: process.env.PUBLIC_URL + '/videos/video11.mp4',
+        videoUrl: process.env.PUBLIC_URL + '/videos/Video11.mp4',
       },
       // other videos
     ],
