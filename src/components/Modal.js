@@ -25,12 +25,47 @@ const Modal = ({
     // Focus the dialog for keyboard users
     // (use rAF so it happens after render)
     const raf = requestAnimationFrame(() => {
-      dialogRef.current?.focus();
+      const root = dialogRef.current;
+      if (!root) return;
+      root.focus();
     });
 
-    // Close on Escape
+    // Close on Escape and trap focus inside the dialog
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') onClose?.();
+      if (e.key === 'Escape') {
+        onClose?.();
+        return;
+      }
+
+      if (e.key !== 'Tab') return;
+
+      const root = dialogRef.current;
+      if (!root) return;
+
+      const focusables = root.querySelectorAll(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      );
+
+      if (!focusables.length) {
+        e.preventDefault();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey) {
+        if (active === first || active === root) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', onKeyDown);
 
@@ -47,7 +82,7 @@ const Modal = ({
 
   if (!isOpen) return null;
 
-  const onOverlayMouseDown = (e) => {
+  const onOverlayClick = (e) => {
     if (!closeOnOverlayClick) return;
     // Only close if the user clicked the overlay itself (not the dialog)
     if (e.target === e.currentTarget) onClose?.();
@@ -56,13 +91,13 @@ const Modal = ({
   return createPortal(
     <div
       className="fixed inset-0 bg-paper flex justify-center items-center z-[9999] p-4 sm:p-8"
-      onMouseDown={onOverlayMouseDown}
-      aria-hidden={false}
+      onClick={onOverlayClick}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-label="Modal Dialog"
         tabIndex={-1}
         ref={dialogRef}
         className="relative bg-paper rounded-lg shadow-xl p-6 sm:p-8 w-[min(92vw,48rem)] lg:w-[min(92vw,64rem)] mx-auto max-h-[85vh] overflow-y-auto outline-none"
@@ -71,15 +106,11 @@ const Modal = ({
           type="button"
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-3 right-3 text-2xl leading-none font-semibold text-ink/70 hover:text-ink focus:outline-none"
+          className="absolute top-4 right-4 z-30 h-8 w-8 flex items-center justify-center text-1xl font-semibold text-ink/30 hover:text-accent rounded-full focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         >
           &times;
         </button>
-        <div className="relative z-10">
-          <div className="[&_:is(#modal-title,h2:first-of-type)]:-mx-4 [&_:is(#modal-title,h2:first-of-type)]:sm:-mx-6 [&_:is(#modal-title,h2:first-of-type)]:px-4 [&_:is(#modal-title,h2:first-of-type)]:sm:px-6 [&_:is(#modal-title,h2:first-of-type)]:py-3 [&_:is(#modal-title,h2:first-of-type)]:mb-4 [&_:is(#modal-title,h2:first-of-type)]:rounded-md [&_:is(#modal-title,h2:first-of-type)]:bg-ink/5">
-            {children}
-          </div>
-        </div>
+        <div className="relative z-10">{children}</div>
         {showTonePlate && (
           <div
             aria-hidden="true"
@@ -88,7 +119,7 @@ const Modal = ({
         )}
       </div>
     </div>,
-    document.body
+    document.body 
   );
 };
 
