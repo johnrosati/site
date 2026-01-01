@@ -2,12 +2,17 @@ import React, { useState, useCallback, useMemo } from 'react';
 import VideoSection from './components/VideoSection';
 import Modal from './components/Modal';
 import FilmSynopsis from './components/FilmSynopsis';
+import ShopModalContent from './components/ShopModalContent';
 
 const App = () => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState('synopsis');
 
   const closeModal = useCallback(() => setModalOpen(false), []);
-  const openModal = useCallback(() => setModalOpen(true), []);
+  const openModal = useCallback((which = 'synopsis') => {
+    setActiveModal(which);
+    setModalOpen(true);
+  }, []);
 
   // These are the stacked videos below (add more here over time)
   const videos = useMemo(
@@ -45,20 +50,22 @@ const App = () => {
             loop
             muted
             playsInline
-            onClick={openModal}
+            onClick={() => openModal(video.title === 'Shop' ? 'shop' : 'synopsis')}
           />
         ))}
 
         {/* --- Static image preview --- */}
         <div className="w-full mt-24 max-w-6xl mx-auto rounded-2xl overflow-hidden">
           <div
-            className="group relative cursor-pointer rounded-2xl border-2 border-transparent bg-paper p-2 sm:p-3 transition-colors focus:outline-none focus-visible:border-accent"
+            className="group relative rounded-2xl border-2 border-transparent bg-paper p-2 sm:p-3 focus:outline-none focus-visible:border-accent"
             role="button"
             tabIndex={0}
             aria-label="Cafe scene still"
-            onClick={openModal}
+            onClick={(e) => e.preventDefault()}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') openModal();
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+              }
             }}
           >
             <img
@@ -67,14 +74,14 @@ const App = () => {
               className="w-full h-auto block rounded-xl"
               loading="lazy"
             />
-            <div className="pointer-events-none absolute inset-2 sm:inset-3 flex items-center justify-center rounded-xl bg-black/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <div className="pointer-events-none absolute inset-2 sm:inset-3 flex items-center justify-center rounded-xl bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
               <span className="text-white text-xl sm:text-2xl font-semibold tracking-wide">Join the Team</span>
             </div>
           </div>
         </div>
 
         <Modal isOpen={isModalOpen} onClose={closeModal}>
-          <FilmSynopsis />
+          {activeModal === 'shop' ? <ShopModalContent /> : <FilmSynopsis />}
         </Modal>
       </div>
     </main>
