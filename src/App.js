@@ -40,8 +40,7 @@ const App = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pt-10 sm:pt-14 pb-16 space-y-10">
-        {/* Stacked videos (add as many as you want; no duplicates with the carousel) */}
+      <div className="mx-auto max-w-5xl px-4 pt-10 sm:pt-14 pb-16 space-y-10">        {/* Stacked videos (add as many as you want; no duplicates with the carousel) */}
         {videos.map((video) => (
           <VideoSection
             key={video.videoUrl}
