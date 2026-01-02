@@ -19,7 +19,7 @@ const App = () => {
     () => [
       {
         title: 'River of Days',
-        videoUrl: process.env.PUBLIC_URL + '/videos/13.mp4',
+        videoUrl: process.env.PUBLIC_URL + '/videos/video13.mp4',
       },
       {
         title: 'Shop',
